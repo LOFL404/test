@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+ 
+    stages {
+        stage('Checkout') {
+            steps {
+                // GitHub에서 코드 체크아웃
+                git 'https://github.com/LOFL404/project-test1.git'
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            steps {
+                // Docker 이미지 빌드 및 레지스트리에 푸시
+                script {
+                    def dockerImage = docker.build("your-docker-image-name")
+                    docker.withRegistry('https://docker-registry-url', 'docker-registry-credentials-id') {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                // Kubernetes 클러스터에 배포
+                script {
+                    def kubeconfig = credentials('kubeconfig-credentials-id')
+                    sh "kubectl --kubeconfig=$kubeconfig apply -f path/to/kubernetes/manifests"
+                }
+            }
+        }
+    }
+}
